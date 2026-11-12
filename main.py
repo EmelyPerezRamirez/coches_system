@@ -9,7 +9,7 @@ class App:
         self.ventana.geometry("600x600")
         self.ventana.resizable(0,0)
         self.main()
-# ----------- Vistas de coches -----------------------------------------------
+
     def borrarPantalla(self):
         for widget in self.ventana.winfo_children():
             widget.destroy()
@@ -53,18 +53,26 @@ class App:
         Label(self.ventana, text="asientos: ").pack(pady=10)
         self.asientos = Entry(self.ventana)
         self.asientos.pack(pady=5)
-        Button(self.ventana, text="Guardar", command=self.insertar_controller).pack(pady=5)
+        Button(self.ventana, text="Guardar", command=lambda: {self.insertar_controller(), self.insertar_view()}).pack(pady=5)
         Button(self.ventana, text= "Regresar", command=self.menu_acciones).pack(pady=5)
 
     def eliminar_view(self):
         self.borrarPantalla()
         Label(self.ventana, text="...Ingresar el ID del coche a eliminar...").pack(pady=10)
+
         Label(self.ventana, text="ID: ").pack(pady=10)
         self.id = Entry(self.ventana)
         self.id.focus()
         self.id.pack(pady=5)
 
-        Button(self.ventana, text= "Eliminar", command=self.eliminar_controller).pack(pady=5)
+        self.btn_buscar = Button(self.ventana, text= "Buscar", command=lambda: self.buscar_controller("Eliminar"))
+        self.btn_buscar.pack(pady=5)
+        
+        
+
+        self.btn_eliminar= Button(self.ventana, text= "Eliminar", state="disabled", command=lambda: {self.eliminar_controller(), self.eliminar_view()})
+        self.btn_eliminar.pack(pady=5)
+        
         Button(self.ventana, text="Regresar", command=self.menu_acciones).pack(pady=5)
 
     def modificar_view(self):
@@ -100,7 +108,7 @@ class App:
         self.asientos = Entry(self.ventana)
         self.asientos.pack(pady=5)
 
-        Button(self.ventana, text="Guardar", command=self.modificar_controller).pack(pady=5)
+        Button(self.ventana, text="Guardar", command=lambda: {self.modificar_controller(), self.modificar_view()}).pack(pady=5)
         Button(self.ventana, text= "Regresar", command=self.menu_acciones).pack(pady=5)
 
     def consultar_view(self):
@@ -112,13 +120,33 @@ class App:
         Label(self.ventana, text=f"{filas}").pack(pady=10)
         Button(self.ventana, text="Regresar", command=self.menu_acciones).pack(pady=5)
 
-    #--------------- Controladores -------------------------------------------
+    def cambiar_estado_btn(self, estado, tipo_accion):
+        if estado: 
+            if tipo_accion == "Eliminar":
+                self.btn_eliminar.config(state="normal")
+            elif tipo_accion == "Modificar":
+                self.btn_modificar.config(state="normal")
+        else:
+            if tipo_accion == "Eliminar":
+                self.btn_eliminar.config(state="disabled")
+            elif tipo_accion == "Modificar":
+                self.btn_modificar.config(state="disabled")
+
+    def confirmacion_eliminar(self, tipo):
+        resp=messagebox.askquestion(title="... ¡ ATENCION ! ...", message=f"¿Estas seguro de {tipo} el registro?")
+        if resp == "yes":
+            return True
+        else:
+            return False
+
+
+
 
     def respuesta_sql(self, respuesta):
             if respuesta:
-                messagebox.showinfo(title="... Exitoso ...", message= "✅ ¡Accion Realizada con Exito! ✅")
+                messagebox.showinfo(title="... Exitoso ...", message= "Accion Realizada con Exito")
             else:
-                messagebox.showerror(title="... ¡ Verifica por favor ! ...", message="❌ ¡Opcion invalida! Oprima cualquier tecla para continuar... ❌")
+                messagebox.showerror(title="... ¡ Verifica por favor ! ...", message="Opcion invalida! ")
     
     def insertar_controller(self):
         coche1 = coches.Coches(self.marca.get(), self.color.get(), self.modelo.get(), self.velocidad.get(), self.potencia.get(), self.asientos.get())                    
@@ -126,13 +154,18 @@ class App:
         respuesta = coche1.insertar()
         self.respuesta_sql(respuesta)
         del coche1
-        self.insertar_view()
+        # self.insertar_view()
 
     def eliminar_controller(self):
         id=self.id.get()
-        respuesta = cochesBD.cochesBD.eliminar(id)
-        self.respuesta_sql(respuesta)
-        self.eliminar_view()
+        res=self.confirmacion_eliminar("eliminar")
+        if res:
+            respuesta = cochesBD.cochesBD.eliminar(id)
+            self.respuesta_sql(respuesta)
+
+        else: 
+            respuesta = False
+            self.respuesta_sql(respuesta)
 
     def modificar_controller(self):
         id=self.id.get()                     
@@ -140,7 +173,7 @@ class App:
         respuesta = coche1.actualizar(id)
         self.respuesta_sql(respuesta)
         del coche1
-        self.modificar_view()
+        # self.modificar_view()
 
     def consultar_controller(self, filas):
         registros=cochesBD.cochesBD.consultar()
@@ -154,12 +187,19 @@ class App:
             filas = "... ¡No existe datos que mostrar por el momento! ..."
         return filas
 
+    def buscar_controller(self,tipo_accion):
+        id=self.id.get()
+        coche1 = cochesBD.cochesBD.buscar(id)
+        if len(coche1)>0:
+            messagebox.showinfo(title="...El registro fue encontrado...",message=f"El registro fue encontrado con exito, {tipo_accion}!...")
+            self.cambiar_estado_btn(True, tipo_accion)
+
+        else:
+            messagebox.showerror(title="... ¡ Verifica por favor ! ...", message=f"El registro no fue encontrado, {tipo_accion}!...")
+            self.cambiar_estado_btn(False, tipo_accion)
 
 
 if __name__=="__main__":
     ventana = Tk()
     app = App(ventana)
     ventana.mainloop()
-
-    #Paquete vistas
-    #paquete controlador
