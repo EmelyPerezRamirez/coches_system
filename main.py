@@ -1,6 +1,6 @@
 from coches import cochesBD, coches
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, StringVar
 
 class App:
     def __init__(self, ventana):
@@ -84,31 +84,42 @@ class App:
         self.id.focus()
         self.id.pack(pady=5)
 
+        self.btn_buscar = Button(self.ventana, text= "Buscar", command=lambda: self.buscar_controller("Modificar"))
+        self.btn_buscar.pack(pady=5)       
+
+        self.var_marca = StringVar()
+        self.var_color = StringVar()
+        self.var_modelo = StringVar()
+        self.var_velocidad = StringVar()
+        self.var_potencia = StringVar()        
+        self.var_asientos = StringVar()
+
         Label(self.ventana, text="Nueva Marca: ").pack(pady=10)
-        self.marca = Entry(self.ventana)
+        self.marca = Entry(self.ventana, textvariable=self.var_marca)
         self.marca.pack(pady=5)
 
         Label(self.ventana, text="Nuevo color: ").pack(pady=10)
-        self.color = Entry(self.ventana)
+        self.color = Entry(self.ventana, textvariable=self.var_color)
         self.color.pack(pady=5)
 
         Label(self.ventana, text="Nuevo modelo: ").pack(pady=10)
-        self.modelo = Entry(self.ventana)
+        self.modelo = Entry(self.ventana, textvariable=self.var_modelo)
         self.modelo.pack(pady=5)
 
         Label(self.ventana, text="Nueva velocidad: ").pack(pady=10)
-        self.velocidad = Entry(self.ventana)
+        self.velocidad = Entry(self.ventana, textvariable=self.var_velocidad)
         self.velocidad.pack(pady=5)
 
         Label(self.ventana, text="Nueva potencia: ").pack(pady=10)
-        self.potencia = Entry(self.ventana)
+        self.potencia = Entry(self.ventana, textvariable=self.var_potencia)
         self.potencia.pack(pady=5)
 
         Label(self.ventana, text="Nuevos asientos: ").pack(pady=10)
-        self.asientos = Entry(self.ventana)
+        self.asientos = Entry(self.ventana, textvariable=self.var_asientos)
         self.asientos.pack(pady=5)
 
-        Button(self.ventana, text="Guardar", command=lambda: {self.modificar_controller(), self.modificar_view()}).pack(pady=5)
+        self.btn_modificar= Button(self.ventana, text="Guardar", state="disabled", command=lambda: {self.modificar_controller(), self.modificar_view()})
+        self.btn_modificar.pack(pady=10)
         Button(self.ventana, text= "Regresar", command=self.menu_acciones).pack(pady=5)
 
     def consultar_view(self):
@@ -138,9 +149,6 @@ class App:
             return True
         else:
             return False
-
-
-
 
     def respuesta_sql(self, respuesta):
             if respuesta:
@@ -193,6 +201,13 @@ class App:
         if len(coche1)>0:
             messagebox.showinfo(title="...El registro fue encontrado...",message=f"El registro fue encontrado con exito, {tipo_accion}!...")
             self.cambiar_estado_btn(True, tipo_accion)
+            if tipo_accion == "Modificar":
+                self.var_marca.set(coche1[0][1])
+                self.var_color.set(coche1[0][2])
+                self.var_modelo.set(coche1[0][3])
+                self.var_velocidad.set(coche1[0][4])
+                self.var_potencia.set(coche1[0][5])
+                self.var_asientos.set(coche1[0][6])
 
         else:
             messagebox.showerror(title="... ¡ Verifica por favor ! ...", message=f"El registro no fue encontrado, {tipo_accion}!...")
@@ -203,3 +218,23 @@ if __name__=="__main__":
     ventana = Tk()
     app = App(ventana)
     ventana.mainloop()
+
+'''
+git init
+git status	Identificar el estado de los archivos
+git add .
+git commit -m "1ER commit of VSCode
+git branch -M main
+git reset --hard HEAD~1
+
+git log
+git log --oneline
+
+git branch test #crear rama
+git branch test #muetra ramas
+git checkout test #cambiar de rama
+
+git checkout main
+git merge test
+git push -u origin main
+'''
