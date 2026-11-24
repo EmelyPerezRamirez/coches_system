@@ -1,6 +1,6 @@
 from coches import cochesBD, coches
 from tkinter import *
-from tkinter import messagebox, StringVar,Menu, Frame
+from tkinter import messagebox, StringVar,Menu, Frame,ttk
 
 class App:
     def __init__(self, ventana):
@@ -188,10 +188,19 @@ class App:
         self.borrarPantalla()
         self.barraMenu()
         Label(self.ventana, text="...::Consultar los coches::...").pack(pady=10)
-        filas=""
-        filas=self.consultar_controller(filas)
-        Label(self.ventana, text=f"{'Coche #':<15}{'ID':<15}{'marca':<15}{'color':<15}{'modelo':<15}{'velocidad':<15}{'potencia':<15}{'asientos':<15}").pack(pady=10)
-        Label(self.ventana, text=f"{filas}").pack(pady=10)
+
+        self.tree =ttk.Treeview(self.ventana, columns=("ID", "Marca", "Color", "Modelo","Velocidad","Potencia","Asientos"), show="headings")
+        self.tree.heading("ID", text="ID")
+        self.tree.heading("Marca", text="Marca")
+        self.tree.heading("Color", text="Color")
+        self.tree.heading("Modelo", text="Modelo")
+        self.tree.heading("Velocidad", text="Velocidad")
+        self.tree.heading("Potencia", text="Potencia")
+        self.tree.heading("Asientos", text="Asientos")
+        self.tree.pack(fill="both", expand=False)
+
+        self.mostrar_coches()
+
         Button(self.ventana, text="Regresar", command=self.menu_acciones).pack(pady=5)
 
     def cambiar_estado_btn(self, estado, tipo_accion):
@@ -218,7 +227,11 @@ class App:
                 messagebox.showinfo(title="... Exitoso ...", message= "Accion Realizada con Exito")
             else:
                 messagebox.showerror(title="... ¡ Verifica por favor ! ...", message="Opcion invalida! ")
+
     
+
+
+
     def insertar_controller(self):
         coche1 = coches.Coches(self.marca.get(), self.color.get(), self.modelo.get(), self.velocidad.get(), self.potencia.get(), self.asientos.get())                    
         coche1 = cochesBD.cochesBD(self.marca.get(), self.color.get(), self.modelo.get(), self.velocidad.get(), self.potencia.get(), self.asientos.get())
@@ -276,6 +289,11 @@ class App:
             messagebox.showerror(title="... ¡ Verifica por favor ! ...", message=f"El registro no fue encontrado, {tipo_accion}!...")
             self.cambiar_estado_btn(False, tipo_accion)
 
+    def mostrar_coches(self):
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+        for row in cochesBD.cochesBD.consultar():
+            self.tree.insert("", "end", values=row)
 
 if __name__=="__main__":
     ventana = Tk()
